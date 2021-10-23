@@ -49,23 +49,23 @@ void new_game(int mode){
     scanf("%63s\n", names[0]);
     printf("jmeno druheho hrace: ");
     scanf("%63s\n", names[1]);
-    save_data(names, "./data/players");
+    for(int n = 0; n<2; n++){
+      for(int k = 0; k<64; k++){
+        if((names[n][k] < 126) && (names[n][k] > 31)){
+          name_len[n]++;
+        }else{
+          break;
+        }
+      }
+    }
+    save_data(names, name_len, "./data/players");
   }else{
     //fixnout
     get_names(names);
   }
-  for(int n = 0; n<2; n++){
-    for(int k = 0; k<64; k++){
-      if((names[n][k] < 126) && (names[n][k] > 31)){
-        name_len[n]++;
-      }else{
-        break;
-      }
-    }
-  }
   first = player_choice();
   size = deck_size();
-  play_screen(first, size, names, name_len);
+  play_screen(first, size, names);
 }
 
 
