@@ -1,10 +1,12 @@
 #include "visual.h"
 #include "logic.h"
 #include <time.h>
-#include <stdio>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void new_game(int mode);
-
+int deck_size();
 void menu(){
   return;
 }
@@ -14,9 +16,9 @@ void name_choice(){
   while(1){
     printf("1 -> vybrat nove jmena\n");
     printf("2 -> pouzit jmena z minule hry\n");
-    printf("3 -> hall of fame\n", );
-    printf("4 -> exit\n", );
-    scanf_s("%i\n", &choice);
+    printf("3 -> hall of fame\n");
+    printf("4 -> exit\n");
+    scanf("%i\n", &choice);
     switch (choice) {
       case 1:
         new_game(0);
@@ -25,10 +27,10 @@ void name_choice(){
         new_game(1);
         break;
       case 3:
-        best_players();
+        top_players();
         break;
       case 4:
-        end_game();
+        exit(1);
       default:
         printf("invalid vyber\n");
         clear_screen();
@@ -47,15 +49,14 @@ void new_game(int mode){
     scanf("%63s\n", names[0]);
     printf("jmeno druheho hrace: ");
     scanf("%63s\n", names[1]);
-    save_data(names[0]);
-    save_data(names[1]);
+    save_data(names, "./data/players");
   }else{
-    names[0] = get_data();
-    names[1] = get_data();
+    //fixnout
+    get_names(names);
   }
   for(int n = 0; n<2; n++){
     for(int k = 0; k<64; k++){
-      if(names[n][k] < 126 and names[n][k] > 31){
+      if((names[n][k] < 126) && (names[n][k] > 31)){
         name_len[n]++;
       }else{
         break;
@@ -81,5 +82,9 @@ int deck_size(){
   int size;
   printf("zvolte velikost hraci desky: ");
   scanf("%i\n",&size);
+  while(size < 0 && size > 15){
+    printf("zvolte validni velikost hraci desky: ");
+    scanf("%i\n",&size);
+  }
   return size;
 }
