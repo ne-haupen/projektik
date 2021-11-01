@@ -59,6 +59,7 @@ int check_surrounding(int a, int b, char xo, char game[15][15]){
   const int win_value = 5; //pocet znaku za sebou pro win fixxxxxxx
   for(int n = 0; n<3; n++){
     for(int k = 0; k<3; k++){
+      current = 1;
       if((game[a+hm[k]][b+hm[n]] == xo)){
         current++;
         if((hm[k] == 0 && hm[n]==0)){
