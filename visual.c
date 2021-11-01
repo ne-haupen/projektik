@@ -18,7 +18,7 @@ void name_choice(){
     printf("2 -> pouzit jmena z minule hry\n");
     printf("3 -> hall of fame\n");
     printf("4 -> exit\n");
-    scanf("%i\n", &choice);
+    scanf("zvolte cislem: %i\n", &choice);
     switch (choice) {
       case 1:
         new_game(0);
@@ -87,4 +87,17 @@ int deck_size(){
     scanf("%i\n",&size);
   }
   return size;
+}
+
+void top_players(){
+  clear_screen();
+  printf("hall of fame: \n");
+  FILE *fd;
+  char s;
+  fd = fopen("./data/top_ten", "r");
+  while((s=fgetc(fd))!=EOF){
+    printf("%c", s);
+  }
+  fclose(fd);
+  return;
 }
