@@ -78,18 +78,6 @@ int check_surrounding(int a, int b, char xo, char game[4][4]){
           a = a+hm[k];
           b = b+hm[n];
         }
-        a = c;
-        b = d;
-        while(game[a-hm[k]][b-hm[n]] == xo){
-          if((0 <= a-hm[k] < 4) && (0 <= b-hm[n] < 4)){
-            current++;
-          }else{
-            break;
-          }
-          a = a-hm[k];
-          b = b-hm[n]; //eeeeeeeee
-        }
-          //printf("dd %i \n", current);
         if(current == win_value){
           return 1;
           }
