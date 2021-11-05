@@ -4,12 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
-void new_game(int mode);
-int deck_size();
-void menu(){
-  return;
-}
+char abc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+char board[15][15];
 
 void name_choice(){
   int choice;
@@ -64,10 +62,31 @@ void new_game(int mode){
     get_names(names);
   }
   first = player_choice();
-  size = deck_size();
-  play_screen(first, size, names);
+  play_screen(first, names);
 }
 
+void play_screen(int first, char names[2][64]){
+  int input =0;
+  while(input==0){
+    printf("Zadajte velkost hracej plochy (Najvacsie mozne pole je 15 a najmensie mozne pole je 3): \n");
+    scanf("%i", &input);
+    printf("%i \n", input);
+    if (input > 15 || input < 3){
+        system("clear");
+        input = 0;
+    }
+    else{
+        system("clear");
+        clearBoard(input);
+        printBoard(input);
+    }
+}
+  while(check_win(board, input)==0){
+    playerInput(first%2, input);
+    first++;
+  }
+  return 0;
+}
 
 int player_choice(){
   srand(time(0));
@@ -78,16 +97,6 @@ int player_choice(){
   }
 }
 
-int deck_size(){
-  int size;
-  printf("zvolte velikost hraci desky: ");
-  scanf("%i\n",&size);
-  while(size < 0 && size > 15){
-    printf("zvolte validni velikost hraci desky: ");
-    scanf("%i\n",&size);
-  }
-  return size;
-}
 
 void top_players(){
   clear_screen();
@@ -100,4 +109,76 @@ void top_players(){
   }
   fclose(fd);
   return;
+}
+
+void printBoard(int velkostPola, board[15][15]) //vypis hracej plochy
+{
+    printf("* ");
+    for(int n=0; n< velkostPola; n++){
+      printf("%c ", abc[n]);
+    }
+    printf("\n");
+    for (int j = 0; j < velkostPola; j++)
+    {
+        printf("%i ", j+1);
+
+        for (int i = 0; i < velkostPola; i++)
+        {
+            printf("%c ", board[j][i]);
+        }
+        printf("\n");
+    }
+}
+
+void clearBoard(int velkostPola) //vynulovanie hracej plochy
+{
+    for (int j = 0; j < velkostPola; j++)
+    {
+        for (int i = 0; i < velkostPola; i++)
+        {
+            board[j][i] = '*';
+        }
+    }
+}
+
+int letterToIndex(char letter)
+{
+    for(int n=0; n<strlen(abc); n++){
+      if((letter == abc[n])||(letter == tolower(abc[n]))){
+        return n;
+      }
+    }
+    return -1;
+}
+
+void playerInput(int pIndex, int velkostPola){
+  char xo[] = "XO";
+  indexAlpha:
+  printf("Zadajte poziciu v tvare PismenoCislo, alebo najprv Pismeno\n");
+  int number =0;
+  char letter;
+  scanf("%c%i", &letter, &number);
+  if (letterToIndex(letter) == -1 || (number<1 || number > velkostPola+2))
+  {
+      if(0<(int)letter<=velkostPola && letterToIndex((char)number)!=-1){
+        int placeholder = number;
+        number = (int)letter;
+        letter = (char)number;
+      }else{
+        printf("tadyZadali ste nespravny index\n\n");
+        goto indexAlpha;
+      }
+  }
+  else
+  {
+    int alphaIndex = letterToIndex(letter);
+    if (board[number-1][alphaIndex] != '*')
+    {
+        printf("Na mieste s tymito suradnicami sa uz nachadza X/O");
+        goto indexAlpha;
+    }
+    board[number-1][alphaIndex] = xo[pIndex];
+}
+  system("clear");
+  printBoard(velkostPola);
 }
