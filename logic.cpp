@@ -1,3 +1,4 @@
+#include "bot.h"
 #include "logic.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,32 +37,36 @@ void hallff_add(char name[64], int pocet_tahu) {
     char moves[10];
     char wins[10];
     int lines = 0;
-    fp = fopen("halloffame.txt", "r");
-    for (int n = 0; (fgetc(fp)) != EOF; n++) {
-        fscanf(fp, "%s %d %d", names[n], &moves[n], &wins[n]);
+    if (fopen("halloffame.txt", "r") == NULL) {
+        fp = fopen("halloffame.txt", "w");
+        fclose(fp);
     }
-    for (int n = 0; n < 10; n++) {
+    fp = fopen("halloffame.txt", "r+");
+    for (int n = 0; (fgetc(fp)) != EOF; n++) {
+        fseek(fp, -1, SEEK_CUR);
+        fscanf(fp, "%s %d %d", names[n], &moves[n], &wins[n]);
+        lines++;
+    }
+    lines--;
+     for (int n = 0; n < 10; n++) {
         if (strcmp(name, names[n]) == 0) {
             moves[n] += pocet_tahu;
             wins[n]++;
-            return;
+        }
+        else if (n == 9) {
+            fseek(fp, 0, SEEK_END);
+            fprintf(fp, "%s %d %d \n", name, pocet_tahu, 1);
+            strcpy(names[lines], name);
+            wins[lines] = 1;
+            moves[lines] = pocet_tahu;
         }
     }
-    fclose(fp);
-    fp = fopen("halloffame.txt", "a");
-    fprintf(fp, "%s %d %d\n", name, pocet_tahu, 1);
-    fclose(fp);
-    fp = fopen("halloffame.txt", "r");
-    for (int n = 0; (fgetc(fp)) != EOF; n++) {
-        fscanf(fp, "%s %d %d", names[n], &moves[n], &wins[n]);
-    }
-
     char nswap[64];
     int wswap;
     int mswap;
-    for (int c = 0; c < 9; c++)
+    for (int c = 0; c < lines; c++)
     {
-        for (int d = 0; ((d < 9 - c)&&(wins[c]>=1)); d++)
+        for (int d = 0; (d < 9 - c); d++)
         {
             if (wins[d] < wins[d + 1])
             {
@@ -77,16 +82,11 @@ void hallff_add(char name[64], int pocet_tahu) {
             }
         }
     }
-    for (int n = 0; n < 10; n++) {
-        printf("%s %d %d\n", names[n], moves[n], wins[n]);
-    }
 
-    int k=0;
-    scanf_s(" %d", k);
     fclose(fp);
     fp = fopen("halloffame.txt", "w");
-    for (int a = 0; fgetc(fp) != EOF; a++) {
-        fprintf(fp, "%s %d %d", names[a], moves[a], wins[a]);
+    for (int a = 0; wins[a]>0; a++) {
+        fprintf(fp, "%s %d %d\n", names[a], moves[a], wins[a]);
     }
     fclose(fp);
     return;
@@ -99,8 +99,9 @@ void get_names(char names[2][64]) {
     char ch;
     fp = fopen("players.txt", "r");
     if (fp == NULL) {
-        printf("error while opening file");
-        exit(1);
+        fp = fopen("players.txt", "w+");
+        fprintf(fp, "%s %s", "player1", "player2");
+        fseek(fp, 0, SEEK_SET);
     }
     for (int n = 0; n < 2; n++) {
         fscanf(fp, "%s", names[n]);
@@ -111,26 +112,28 @@ void get_names(char names[2][64]) {
 }
 
 int check_win(char gamee[26][26], int size) {
+    int count = 0;
+    int winc = win_value(size);
     for (int n = 0; n < size; n++) {
         for (int k = 0; k < size; k++) {
             if (gamee[n][k] != '*') {
-                if (check_surrounding(n, k, gamee[n][k], gamee) == 1) {
+                count++;
+                if (check_surrounding(n, k, gamee[n][k], gamee, winc) == 1) {
                     return 1;
                 }
             }
         }
     }
+    if (count == size * size) {
+        return -1;
+    }
     return 0;
 }
 
 
-int check_surrounding(int a, int b, char xo, char game[26][26]) {
+int check_surrounding(int a, int b, char xo, char game[26][26], int win_value) {
     int hm[] = { -1, 0, 1 };
     int current = 1;
-    int c, d;
-    c = a;
-    d = b;
-    const int win_value = 3; //pocet znaku za sebou pro win fixxxxxxx
     for (int n = 0; n < 3; n++) {
         for (int k = 0; k < 3; k++) {
             current = 1;
@@ -156,4 +159,8 @@ int check_surrounding(int a, int b, char xo, char game[26][26]) {
         }
     }
     return 0;
+}
+
+int win_value(int size) {
+    return 3;
 }

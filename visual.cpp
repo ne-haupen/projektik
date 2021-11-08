@@ -5,8 +5,8 @@
 #include <ctype.h>
 #include "visual.h"
 #include "logic.h"
+#include "bot.h"
 
-char abc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char board[26][26];
 
 typedef struct players {
@@ -19,12 +19,13 @@ players p;
 void name_choice() {
     int choice;
     get_names(p.names);
+    printf("last players: %s, %s\n", p.names[0], p.names[1]);
     while (1) {
-        printf("last players: %s, %s\n", p.names[0], p.names[1]);
         printf("1 -> vybrat nove jmena\n");
         printf("2 -> pouzit jmena z minule hry\n");
         printf("3 -> hall of fame\n");
-        printf("4 -> exit\n");
+        printf("4 -> hra proti botovi\n");
+        printf("5 -> exit\n");
         scanf_s(" %d", &choice);
         while (getchar() != '\n');
         switch (choice) {
@@ -38,6 +39,9 @@ void name_choice() {
             top_players();
             break;
         case 4:
+            new_game(2);
+            break;
+        case 5:
             exit(1);
         default:
             printf("invalid vyber\n");
@@ -45,8 +49,20 @@ void name_choice() {
     }
 }
 
+void against_bot(int board_size){
+    strcpy(p.names[1], "ty");
+    strcpy(p.names[0], "bot");
+    system("cls");
+    clearBoard(board_size);
+    printBoard(board_size, 1);
+    while (check_win(board, board_size) == 0) {
+        playerInput(1, board_size);
+        computer_move(board_size, board);
+    }
+}
+
 void new_game(int mode) {
-    int first;
+    int first, input;
     if (mode == 0) {
         memset(p.names[0], 0, strlen(p.names[0]));
         memset(p.names[1], 0, strlen(p.names[1]));
@@ -56,36 +72,46 @@ void new_game(int mode) {
         fgets(p.names[1], 63, stdin);
         save_data(p.names);
     }
-    else {
+    else if (mode == 1) {
         get_names(p.names);
     }
-    first = player_choice();
-    play_screen(first, p.names);
+    else {
+        input = board_size();
+        against_bot(input);
+    }
+    if (mode != -1) {
+        input = board_size();
+        system("cls");
+        clearBoard(input);
+        first = player_choice();
+        printBoard(input, first);
+        play_screen(first, p.names, input);
+    }
+    return;
 }
 
-void play_screen(int first, char names[2][64]) {
-    int input = 0;
-    while (input == 0) {
-        printf("Zadajte velkost hracej plochy (Najvacsie mozne pole je 15 a najmensie mozne pole je 3): \n");
-        scanf_s(" %d", &input);
-        while (getchar() != '\n');
-        if (input > 26 || input < 3) {
-            system("cls");
-            input = 0;
-        }
-        else {
-            system("cls");
-            clearBoard(input);
-            printBoard(input, first);
-        }
-    }
+void play_screen(int first, char names[2][64], int input) {
     while (check_win(board, input) == 0) {
         first = (first + 1) % 2;
         playerInput(first, input);
     }
-    first++;
-    printf("%s vyhral(a) v %i tazich\n", p.names[first], (p.pocet_tahu)/2);
-    hallff_add(p.names[first], (p.pocet_tahu) / 2);
+    system("cls");
+    if (check_win(board, input) == 1) {
+        first = (first + 1) % 2;
+        hallff_add(p.names[first], (p.pocet_tahu) / 2);
+        printf("%s vyhral(a) v %i tazich\n", p.names[first], (p.pocet_tahu) / 2);
+    }
+    else {
+        printf("remiza\n");
+    }
+    printf("1 -> exit\n");
+    printf("2 -> nova hra\n");
+    int choice = 0; 
+    scanf_s(" %d", &choice);
+    if (choice == 1) {
+        exit(1);
+    }
+    system("cls");
     return;
 }
 
@@ -99,8 +125,22 @@ int player_choice() {
     }
 }
 
+int board_size() {
+    int input = 0;
+    while (input == 0) {
+        printf("Zadajte velkost hracej plochy (Najvacsie mozne pole je 15 a najmensie mozne pole je 3): \n");
+        scanf_s(" %d", &input);
+        while (getchar() != '\n');
+        if (input > 26 || input < 3) {
+            system("cls");
+            input = 0;
+        }
+    }
+    return input;
+}
 
-void top_players() {
+
+void top_players(){
     printf("hall of fame: \n");
     FILE* fd;
     char s;
@@ -115,8 +155,12 @@ void top_players() {
 
 void printBoard(int velkostPola, int first) //vypis hracej plochy
 {
-    printf("%s je na rade \n", p.names[first]);
-    printf("* ");
+    system("cls");
+    char abc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (first != -1) {
+        printf("%s je na rade \n", p.names[first]);
+    }
+    printf("*  ");
     for (int n = 0; n < velkostPola; n++) {
         printf("%c ", abc[n]);
     }
@@ -151,6 +195,7 @@ void clearBoard(int velkostPola) //vynulovanie hracej plochy
 
 int letterToIndex(char letter)
 {
+    char abc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (int n = 0; n < strlen(abc); n++) {
         if ((letter == abc[n]) || (letter == tolower(abc[n]))) {
             return n;
@@ -187,7 +232,6 @@ void playerInput(int pIndex, int velkostPola) {
         }
     }
     p.pocet_tahu++;
-    system("cls");
     printBoard(velkostPola, pIndex);
     return;
 }
