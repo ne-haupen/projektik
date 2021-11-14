@@ -50,14 +50,25 @@ void name_choice() {
 }
 
 void against_bot(int board_size){
-    strcpy(p.names[1], "ty");
-    strcpy(p.names[0], "bot");
+    int needed = win_value(board_size);
+    int moves[2] = { 0,0 };
+    if (needed % 2 == 0) {
+        needed++;
+    }
+    strcpy(p.names[0], "ty");
+    strcpy(p.names[1], "bot");
     system("cls");
     clearBoard(board_size);
     printBoard(board_size, 1);
+
     while (check_win(board, board_size) == 0) {
-        playerInput(1, board_size);
-        computer_move(board_size, board);
+        playerInput(0, board_size);
+        if (check_win(board, board_size) != 0) {
+            break;
+        }
+        computer_move(board, board_size, needed, moves);
+        board[moves[0]][moves[1]] = 'O';
+        printBoard(board_size, 0);
     }
 }
 

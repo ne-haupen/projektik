@@ -11,4 +11,4 @@ void clearBoard(int velkostPola);
 void printBoard(int velkostPola, int first);
 void new_game(int mode);
 void play_screen(int first, char names[2][64], int input);
-void agains_bot();
+void against_bot(int);
