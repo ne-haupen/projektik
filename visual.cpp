@@ -55,8 +55,8 @@ void against_bot(int board_size){
     if (needed % 2 == 0) {
         needed++;
     }
-    strcpy(p.names[0], "ty");
-    strcpy(p.names[1], "bot");
+    strcpy(p.names[0], "bot");
+    strcpy(p.names[1], "clovek");
     system("cls");
     clearBoard(board_size);
     printBoard(board_size, 1);
@@ -64,17 +64,32 @@ void against_bot(int board_size){
     while (check_win(board, board_size) == 0) {
         playerInput(0, board_size);
         if (check_win(board, board_size) != 0) {
+            printf("clovek vyhral(a) v %i tazich\n",(p.pocet_tahu) / 2);
             break;
         }
-        computer_move(board, board_size, needed, moves);
+        if (computer_move(board, board_size, needed, moves) == -1) {
+            printf("surrender\n ");
+            break;
+        }
         board[moves[0]][moves[1]] = 'O';
+        p.pocet_tahu++;
         printBoard(board_size, 0);
     }
+    printf("1 -> exit\n");
+    printf("2 -> nova hra\n");
+    int choice = 0;
+    scanf_s(" %d", &choice);
+    if (choice == 1) {
+        exit(1);
+    }
+    system("cls");
+    return;
 }
 
 void new_game(int mode) {
     int first, input;
-    if (mode == 0) {
+    switch(mode){
+    case 0:
         memset(p.names[0], 0, strlen(p.names[0]));
         memset(p.names[1], 0, strlen(p.names[1]));
         printf("jmeno prvniho hrace: \n");
@@ -82,26 +97,27 @@ void new_game(int mode) {
         printf("jmeno druheho hrace: \n");
         fgets(p.names[1], 63, stdin);
         save_data(p.names);
-    }
-    else if (mode == 1) {
+        break;
+    case 1:
         get_names(p.names);
-    }
-    else {
+        break;
+    case 2:
         input = board_size();
         against_bot(input);
+        break;
     }
-    if (mode != -1) {
-        input = board_size();
-        system("cls");
-        clearBoard(input);
-        first = player_choice();
-        printBoard(input, first);
-        play_screen(first, p.names, input);
+    if (mode != 2) {
+        play_screen(p.names);
     }
     return;
 }
 
-void play_screen(int first, char names[2][64], int input) {
+void play_screen(char names[2][64]) {
+    int input = board_size();
+    system("cls");
+    clearBoard(input);
+    int first = player_choice();
+    printBoard(input, first);
     while (check_win(board, input) == 0) {
         first = (first + 1) % 2;
         playerInput(first, input);
@@ -139,7 +155,7 @@ int player_choice() {
 int board_size() {
     int input = 0;
     while (input == 0) {
-        printf("Zadajte velkost hracej plochy (Najvacsie mozne pole je 15 a najmensie mozne pole je 3): \n");
+        printf("Zadajte velkost hracej plochy (Najvacsie mozne pole je 26 a najmensie mozne pole je 3): \n");
         scanf_s(" %d", &input);
         while (getchar() != '\n');
         if (input > 26 || input < 3) {
@@ -218,10 +234,13 @@ int letterToIndex(char letter)
 void playerInput(int pIndex, int velkostPola) {
     char xo[] = "XO";
     bool done = false;
-    int number, alphaIndex;
+    bool fail = false;
+    int number;
+    int alphaIndex;
     char letter;
     while(done == false){
         printf("Zadajte poziciu v tvare PismenoCislo, alebo najprv Pismeno\n");
+        fflush(stdin);
         scanf_s(" %c %d", &letter, 1, &number);
         if (letterToIndex(letter) == -1 || (number<1 || number > velkostPola + 2)){
             if (0 < int(letter - '0') <= velkostPola && letterToIndex((char)number) != -1) {
@@ -231,7 +250,7 @@ void playerInput(int pIndex, int velkostPola) {
                 board[number - 1][letterToIndex(letter)] = xo[pIndex];
                 done = true;
             }else{
-                printf("Zadali ste nespravny index\n\n");
+                printf("Zadali ste nespravny index\n");
             }
         }else{
             if (board[number - 1][letterToIndex(letter)] != '*'){

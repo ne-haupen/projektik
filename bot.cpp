@@ -21,15 +21,11 @@ void first_move(char board[26][26], int size, int move[2]) {
     int x, y;
     int ch = 0;
     bool done = false;
-    for (int a = 0; done ==false; a++) {
-        for (int b = 0; done == false; b++) {
+    for (int a = 0; ch == 0; a++) {
+        for (int b = 0; ch == 0; b++) {
             if (board[a][b] != '*') {
-                done = true;
-            }else
-                ch++;
-        }
-        if (done == true) {
-            break;
+                ch = a * size + b + 1;
+            }
         }
     }
     int moves[] = { -1, 0, 1 };
@@ -47,7 +43,8 @@ void first_move(char board[26][26], int size, int move[2]) {
         y += moves[rand() % 3];
         if ((x >= 0) && (y >= 0)) {
             if (!((x == sx) && (y == sy))) {
-                done = true;
+                if(x<size && y <size)
+                    done = true;
             }
         }
         else {
@@ -150,10 +147,10 @@ int minimax(char board[26][26], int depth, bool isMax, int size, int focus[2], i
 {
     int score = check_win_s(board, size);
     int sx, sy;
-    sx = focus[0] - (needed/2);
-    sy = focus[1] - (needed / 2);
-    // If Maximizer has won the game return his/her
-    // evaluated score
+    sx = focus[0] - (needed+1/2);
+    sy = focus[1] - (needed+1 / 2);
+    if (sx < 0) sx = 0;
+    if (sy < 0) sy = 0;
     if (score == 1)
         return -10;
     if (score == 2)
@@ -169,6 +166,9 @@ int minimax(char board[26][26], int depth, bool isMax, int size, int focus[2], i
             {
                 if (board[i][j] == '*')
                 {
+                    if (depth > 3) {
+                        return best;
+                    }
                     board[i][j] = 'O';
                     best = max(best,
                         minimax(board, depth + 1, !isMax, size, focus, needed));
@@ -187,6 +187,9 @@ int minimax(char board[26][26], int depth, bool isMax, int size, int focus[2], i
             {
                 if (board[i][j] == '*')
                 {
+                    if (depth > 3) {
+                        return best;
+                    }
                     board[i][j] = 'X';
                     best = min(best,
                         minimax(board, depth + 1, !isMax, size, focus, needed));
@@ -198,35 +201,29 @@ int minimax(char board[26][26], int depth, bool isMax, int size, int focus[2], i
     }
 }
 
-void computer_move(char board[26][26], int size, int needed, int move[2])
+int computer_move(char board[26][26], int size, int needed, int move[2])
 {
     int game_focus[2];
     if ((count(board, size)) == 1) {
         first_move(board, size, move);
-        return;
+        return 0;
     }
     get_focus(board, size, needed, game_focus);
     int sx, sy, move_x, move_y;
     int bestVal = -1000;
-    sy = game_focus[1] - (needed / 2);
-    sx = game_focus[0] - (needed / 2);
-    while ((sx - ((needed+1) / 2)) < 0) {
-        sx++;
-    }
-    while ((sy - ((needed+1) / 2)) < 0) {
-        sy++;
-    }
-    for (int i = sx; i < sx + needed; i++)
+    sy = game_focus[1] - (needed+1 / 2);
+    sx = game_focus[0] - (needed+1 / 2);
+    if (sx < 0) sx = 0;
+    if (sy < 0) sy = 0;
+    for (int i = sx; i < sx + needed + 1; i++)
     {
-        for (int j = sy; j < sy + needed; j++)
+        for (int j = sy; j < sy + needed + 1; j++)
         {
-            if (board[i][j] == '*')
-            {
+            if (board[i][j] == '*'){
                 board[i][j] = 'X';
                 int moveVal = minimax(board, 0, false, size, game_focus, needed);
                 board[i][j] = '*';
-                if (moveVal > bestVal)
-                {
+                if (moveVal > bestVal){
                     move_x = i;
                     move_y = j;
                     bestVal = moveVal;
@@ -234,7 +231,10 @@ void computer_move(char board[26][26], int size, int needed, int move[2])
             }
         }
     }
+    if (move[1]<0 || move[1]>size-1 || move[0]<0 || move[0]>size - 1) {
+        return -1;
+    }
     move[0] = move_x;
     move[1] = move_y;
-    return;
+    return 0;
 }

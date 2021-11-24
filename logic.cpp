@@ -162,5 +162,6 @@ int check_surrounding(int a, int b, char xo, char game[26][26], int win_value) {
 }
 
 int win_value(int size) {
-    return 3;
+    int value = (size - 3) / 2 + 3;
+    return value;
 }
