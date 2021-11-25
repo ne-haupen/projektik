@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 int main() {
+	//name_choice();
+	hallff_add("oke", 3);
 	name_choice();
     return 0;
 }

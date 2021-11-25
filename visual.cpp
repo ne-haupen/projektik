@@ -26,6 +26,7 @@ void name_choice() {
         printf("3 -> hall of fame\n");
         printf("4 -> hra proti botovi\n");
         printf("5 -> exit\n");
+        printf("vyber: ");
         scanf_s(" %d", &choice);
         while (getchar() != '\n');
         switch (choice) {
@@ -64,7 +65,11 @@ void against_bot(int board_size){
     while (check_win(board, board_size) == 0) {
         playerInput(0, board_size);
         if (check_win(board, board_size) != 0) {
-            printf("clovek vyhral(a) v %i tazich\n",(p.pocet_tahu) / 2);
+            printf("clovek vyhral(a) v %i tazich\n",(p.pocet_tahu)/4);
+            break;
+        }
+        else if (check_win(board, board_size) == -1) {
+            printf("remiza");
             break;
         }
         if (computer_move(board, board_size, needed, moves) == -1) {
@@ -73,7 +78,7 @@ void against_bot(int board_size){
         }
         board[moves[0]][moves[1]] = 'O';
         p.pocet_tahu++;
-        printBoard(board_size, 0);
+        printBoard(board_size, 1);
     }
     printf("1 -> exit\n");
     printf("2 -> nova hra\n");
@@ -127,8 +132,7 @@ void play_screen(char names[2][64]) {
         first = (first + 1) % 2;
         hallff_add(p.names[first], (p.pocet_tahu) / 2);
         printf("%s vyhral(a) v %i tazich\n", p.names[first], (p.pocet_tahu) / 2);
-    }
-    else {
+    }else if(check_win(board, input == -1)){
         printf("remiza\n");
     }
     printf("1 -> exit\n");
@@ -168,7 +172,7 @@ int board_size() {
 
 
 void top_players(){
-    printf("hall of fame: \n");
+    printf("\nhall of fame: \n");
     FILE* fd;
     char s;
     fd = fopen("halloffame.txt", "r");
@@ -239,9 +243,10 @@ void playerInput(int pIndex, int velkostPola) {
     int alphaIndex;
     char letter;
     while(done == false){
+        number = 0;
+        letter = ' ';
         printf("Zadajte poziciu v tvare PismenoCislo, alebo najprv Pismeno\n");
-        fflush(stdin);
-        scanf_s(" %c %d", &letter, 1, &number);
+        scanf_s(" %c%d", &letter, 1, &number);
         if (letterToIndex(letter) == -1 || (number<1 || number > velkostPola + 2)){
             if (0 < int(letter - '0') <= velkostPola && letterToIndex((char)number) != -1) {
                 int placeholder = number;
@@ -251,6 +256,7 @@ void playerInput(int pIndex, int velkostPola) {
                 done = true;
             }else{
                 printf("Zadali ste nespravny index\n");
+                //printf("%c %d\n", letter, number);
             }
         }else{
             if (board[number - 1][letterToIndex(letter)] != '*'){

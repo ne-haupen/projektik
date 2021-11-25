@@ -48,10 +48,18 @@ void hallff_add(char name[64], int pocet_tahu) {
         lines++;
     }
     lines--;
+    if (lines == -1) {
+        fclose(fp);
+        fp = fopen("halloffame.txt", "w");
+        fprintf(fp, "%s %d %d\n", name, pocet_tahu, 1);
+        fclose(fp);
+        return;
+    }
      for (int n = 0; n < 10; n++) {
         if (strcmp(name, names[n]) == 0) {
             moves[n] += pocet_tahu;
             wins[n]++;
+            break;
         }
         else if (n == 9) {
             fseek(fp, 0, SEEK_END);
@@ -64,9 +72,9 @@ void hallff_add(char name[64], int pocet_tahu) {
     char nswap[64];
     int wswap;
     int mswap;
-    for (int c = 0; c < lines; c++)
+    for (int c = 0; c < lines-1; c++)
     {
-        for (int d = 0; (d < 9 - c); d++)
+        for (int d = 0; (d < lines - c - 1); d++)
         {
             if (wins[d] < wins[d + 1])
             {
@@ -77,8 +85,8 @@ void hallff_add(char name[64], int pocet_tahu) {
                 wins[d + 1] = wswap;
                 moves[d] = moves[d + 1];
                 moves[d + 1] = mswap;
-                strcpy(names[d + 1], names[d]);
-                strcpy(names[d], nswap);
+                strcpy(names[d], names[d+1]);
+                strcpy(names[d+1], nswap);
             }
         }
     }
