@@ -174,10 +174,19 @@ int board_size() {
 void top_players(){
     printf("\nhall of fame: \n");
     FILE* fd;
-    char s;
+    char name[64], ch;
+    int moves, win;
+    int count = 0;
     fd = fopen("halloffame.txt", "r");
-    while ((s = fgetc(fd)) != EOF) {
-        printf("%c", s);
+    while ((ch = fgetc(fd)) != EOF) {
+        if (ch == '\n')
+            count++;
+    }
+    fseek(fd, 0, SEEK_SET);
+    for (int n = 0; n<count; n++) {
+        fseek(fd, 0, SEEK_CUR);
+        fscanf(fd, "%s %d %d", name, &moves, &win);
+        printf("%s m:%d W:%d\n", name, moves, win);
     }
     printf("\n\n\n");
     fclose(fd);
