@@ -6,8 +6,6 @@
 #include <stdlib.h>
 
 int main() {
-	//name_choice();
-	hallff_add("simono", 3);
 	name_choice();
     return 0;
 }

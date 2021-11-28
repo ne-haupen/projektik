@@ -18,7 +18,7 @@ players p;
 
 void name_choice() {
     int choice;
-    get_names(p.names);
+    get_names(p.names); //ulozi do promenych jmena hracu z minule hry
     printf("last players: %s, %s\n", p.names[0], p.names[1]);
     while (1) {
         printf("1 -> vybrat nove jmena\n");
@@ -53,19 +53,20 @@ void name_choice() {
 void against_bot(int board_size){
     int needed = win_value(board_size);
     int moves[2] = { 0,0 };
+    //needed je hodnota pro funkci minimax
+    //redukuje hraci plochu jen na pocet policek potrebnych pro vyhru
     if (needed % 2 == 0) {
         needed++;
     }
-    strcpy(p.names[0], "bot");
     strcpy(p.names[1], "clovek");
     system("cls");
     clearBoard(board_size);
     printBoard(board_size, 1);
 
     while (check_win(board, board_size) == 0) {
-        playerInput(0, board_size);
+        playerInput(1, board_size);
         if (check_win(board, board_size) != 0) {
-            printf("clovek vyhral(a) v %i tazich\n",(p.pocet_tahu)/4);
+            printf("clovek vyhral(a) v %i tazich\n",(p.pocet_tahu)/2);
             break;
         }
         else if (check_win(board, board_size) == -1) {
@@ -80,17 +81,14 @@ void against_bot(int board_size){
         p.pocet_tahu++;
         printBoard(board_size, 1);
     }
-    printf("1 -> exit\n");
-    printf("2 -> nova hra\n");
-    int choice = 0;
-    scanf_s(" %d", &choice);
-    if (choice == 1) {
-        exit(1);
-    }
-    system("cls");
+    exit_menu();
     return;
 }
 
+//mody jsou dva podle zpusobu zadavani jmen
+//mod 0 umoznuje hracum vybrat nove jmena
+//mod 1 pouzije jmena ulozene z minule hry
+//mod 2 spusti hru s botem
 void new_game(int mode) {
     int first, input;
     switch(mode){
@@ -101,7 +99,7 @@ void new_game(int mode) {
         fgets(p.names[0], 63, stdin);
         printf("jmeno druheho hrace: \n");
         fgets(p.names[1], 63, stdin);
-        save_data(p.names);
+        save_data(p.names);     //po vyberu novych jmen se jmena ulozi
         break;
     case 1:
         get_names(p.names);
@@ -117,17 +115,31 @@ void new_game(int mode) {
     return;
 }
 
-void play_screen(char names[2][64]) {
-    int input = board_size();
+void exit_menu() {
+    printf("1 -> exit\n");
+    printf("2 -> nova hra\n");
+    int choice = 0;
+    scanf_s(" %d", &choice);
+    if (choice == 1) {
+        exit(1);
+    }
     system("cls");
-    clearBoard(input);
-    int first = player_choice();
-    printBoard(input, first);
+    return;
+}
+void play_screen(char names[2][64]) {
+    int input = board_size();       //umozni hracum vybrat velikost hraciho pole
+    system("cls");
+    clearBoard(input);      //pripravi hraci pole podle velikosti hraci plochy
+    int first = player_choice();    //nahodne se vybere prvni na rade
+    printBoard(input, first);       //vypise se hraci pole s nazvem hrace na tahu
+    //samotna hra
     while (check_win(board, input) == 0) {
         first = (first + 1) % 2;
         playerInput(first, input);
     }
     system("cls");
+
+    //pokud nekdo vyhral zaznamena se v hall of fame
     if (check_win(board, input) == 1) {
         first = (first + 1) % 2;
         hallff_add(p.names[first], (p.pocet_tahu) / 2);
@@ -135,14 +147,7 @@ void play_screen(char names[2][64]) {
     }else if(check_win(board, input == -1)){
         printf("remiza\n");
     }
-    printf("1 -> exit\n");
-    printf("2 -> nova hra\n");
-    int choice = 0; 
-    scanf_s(" %d", &choice);
-    if (choice == 1) {
-        exit(1);
-    }
-    system("cls");
+    exit_menu;
     return;
 }
 
@@ -185,7 +190,7 @@ void top_players(){
     fseek(fd, 0, SEEK_SET);
     for (int n = 0; n<count; n++) {
         fseek(fd, 0, SEEK_CUR);
-        fscanf(fd, "%s %d %d", name, &moves, &win);
+        fscanf(fd, "%s %d %d", name, &moves, &win);     //fcan pouzit aby bylo mozne printnout m: W: k datum. pro lepsi orientaci.
         printf("%s m:%d W:%d\n", name, moves, win);
     }
     printf("\n\n\n");
@@ -222,6 +227,7 @@ void printBoard(int velkostPola, int first) //vypis hracej plochy
     }
 }
 
+//pole ma pevnou velikost 26, podle uzivatelskeho vyberu se pak pracuje jen s casti pole.
 void clearBoard(int velkostPola) //vynulovanie hracej plochy
 {
     for (int j = 0; j < velkostPola; j++)
@@ -245,9 +251,8 @@ int letterToIndex(char letter)
 }
 
 void playerInput(int pIndex, int velkostPola) {
-    char xo[] = "XO";
+    char xo[] = "OX";
     bool done = false;
-    bool fail = false;
     int number;
     int alphaIndex;
     char letter;
@@ -257,6 +262,7 @@ void playerInput(int pIndex, int velkostPola) {
         printf("Zadajte poziciu v tvare PismenoCislo, alebo najprv Pismeno\n");
         scanf_s(" %c%d", &letter, 1, &number);
         if (letterToIndex(letter) == -1 || (number<1 || number > velkostPola + 2)){
+            //zkontroluje se zda uzivatel nezadal pozici naopak.
             if (0 < int(letter - '0') <= velkostPola && letterToIndex((char)number) != -1) {
                 int placeholder = number;
                 number = int(letter - '0');

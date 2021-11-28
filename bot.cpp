@@ -65,6 +65,7 @@ int min(int a, int b) {
     return a < b ? a : b;
 }
 
+//upravena funkce check win, kontroluje zda vyhral nepritel nebo bot. Potrebne pro vypocet vyhodnosti pozic
 int check_win_s(char gamee[26][26], int size) {
     int count = 0;
     int winc = win_value(size);
@@ -103,6 +104,9 @@ int moves_left(char board[26][26], int focus[2], int needed, int size) {
     return count;
 }
 
+
+//urcuje na kterou cast pole se ma algoritmus soustredit.
+//prumer pozic vsech zadanych znaku.
 void get_focus(char board[26][26], int size, int needed, int focus[2]) {
     int counts[2] = { 0, 0 };
     int char_count = 0;
@@ -148,7 +152,7 @@ int minimax(char board[26][26], int depth, bool isMax, int size, int focus[2], i
     int score = check_win_s(board, size);
     int sx, sy;
     sx = focus[0] - (needed+1/2);
-    sy = focus[1] - (needed+1 / 2);
+    sy = focus[1] - (needed+1/2);
     if (sx < 0) sx = 0;
     if (sy < 0) sy = 0;
     if (score == 1)
@@ -204,6 +208,7 @@ int minimax(char board[26][26], int depth, bool isMax, int size, int focus[2], i
 int computer_move(char board[26][26], int size, int needed, int move[2])
 {
     int game_focus[2];
+    //pokud se jedna o prvni tah, vybere se pozice vedle prvniho tahu cloveka
     if ((count(board, size)) == 1) {
         first_move(board, size, move);
         return 0;
