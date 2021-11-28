@@ -62,7 +62,8 @@ void against_bot(int board_size){
     system("cls");
     clearBoard(board_size);
     printBoard(board_size, 1);
-
+    //podobny loop jako u pvp hry, jen se kontroluje zda bot byl schopny najit dalsi tah
+    //pokud ne bere se to jako jeho surrender
     while (check_win(board, board_size) == 0) {
         playerInput(1, board_size);
         if (check_win(board, board_size) != 0) {
@@ -183,6 +184,10 @@ void top_players(){
     int moves, win;
     int count = 0;
     fd = fopen("halloffame.txt", "r");
+    if (fd == NULL) {
+        printf("nikdo zatim nedosahl sine slavy\n\n");
+        return;
+    }
     while ((ch = fgetc(fd)) != EOF) {
         if (ch == '\n')
             count++;
